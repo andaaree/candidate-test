@@ -23,7 +23,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             SupplierSeeder::class,
             LayupSeeder::class,
-            
+            LayerSeeder::class,
         ]);
     }
 }

@@ -18,8 +18,6 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
 
-            $table->unique(['supplier_id', 'name']);
-            $table->index(['supplier_id', 'name']);
         });
     }
 
