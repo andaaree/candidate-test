@@ -6,7 +6,6 @@ use Database\Factories\SupplierFactory;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[UseFactory(SupplierFactory::class)]
@@ -21,9 +20,4 @@ class Supplier extends Model
     protected $fillable = [
         'name',
     ];
-
-    public function layups(): HasMany
-    {
-        return $this->hasMany(Layup::class);
-    }
 }
