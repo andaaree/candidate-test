@@ -27,4 +27,7 @@ class Layer extends Model
         'angle',
     ];
 
+    public function layout() : HasOne {
+        return $this->hasOne('layup', 'layup_id', 'id');
+    }
 }
