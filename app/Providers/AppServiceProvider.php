@@ -2,8 +2,7 @@
 
 namespace App\Providers;
 
-use App\Services\SupplierService;
-use App\SuppliersInterface;
+use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -13,10 +12,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->bind(
-            SuppliersInterface::class,
-            SupplierService::class
-        );
+        //
     }
 
     /**
@@ -24,6 +20,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        Vite::prefetch(concurrency: 3);
     }
 }
