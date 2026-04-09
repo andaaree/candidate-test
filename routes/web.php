@@ -1,14 +1,24 @@
 <?php
 
+use App\Http\Controllers\LayupController;
+use App\Http\Controllers\LayerController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SupplierController;
+use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
 Route::get('/', function () {
-    return view('welcome');
+    return Inertia::render('Welcome', [
+        'canLogin' => Route::has('login'),
+        'canRegister' => Route::has('register'),
+        'laravelVersion' => Application::VERSION,
+        'phpVersion' => PHP_VERSION,
+    ]);
 });
 
 Route::get('/dashboard', function () {
-    return view('dashboard');
+    return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
@@ -16,5 +26,9 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+
+Route::get('/s',[SupplierController::class,'index'])->name('supplier.index');
+Route::get('/lp',[LayupController::class,'index'])->name('layup.index');
+Route::get('/ly',[LayerController::class,'index'])->name('layer.index');
 
 require __DIR__.'/auth.php';
