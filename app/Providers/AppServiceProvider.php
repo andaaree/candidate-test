@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Services\SupplierService;
+use App\SuppliersInterface;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -11,7 +13,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->bind(
+            SuppliersInterface::class,
+            SupplierService::class
+        );
     }
 
     /**
