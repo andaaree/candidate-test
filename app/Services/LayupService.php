@@ -47,6 +47,16 @@ class LayupService implements LayupInterface{
         }
         throw new \Exception('Not implemented');
     }
+
+    public function store(array $data) {
+        try {
+            $lay = Layup::create($data);
+            return $this->message($lay,null,'Layup created successfully');
+        } catch (\Throwable $th) {
+            return $this->err(Layup::class,$th);
+        }
+    }
+
     public function updateForSupplier(int $supplierId,Layup $layup, array $data)
     {
         try {
