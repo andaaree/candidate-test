@@ -3,10 +3,11 @@ namespace App\Services;
 
 use App\Models\Supplier;
 use App\Contracts\SuppliersInterface;
+use App\Traits\FeedbackHandler;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use App\Traits\GlobalWarn;
 class SupplierService implements SuppliersInterface{
-    use GlobalWarn;
+    use FeedbackHandler;
 
     public function paginate(int $perPage = 10):LengthAwarePaginator {
         return Supplier::query()
@@ -19,7 +20,7 @@ class SupplierService implements SuppliersInterface{
         try {
             return Supplier::create($data);
         } catch (\Exception $th) {
-            return $this->message('error',$th->getMessage());
+            return $this->err('error',$th);
         }
     }
 
@@ -28,19 +29,19 @@ class SupplierService implements SuppliersInterface{
             $supplier->update($data);
             return $supplier;
         } catch (\Exception $th) {
-            return $this->message('error',$th->getMessage());
+            return $this->err('error',$th);
         }
     }
 
     public function delete(Supplier $supplier) {
         try {
             if ($supplier->layups()->exists()) {
-                return $this->message('error','Supplier masih memiliki layup');
+                return $this->err('error',new \Exception('Supplier masih memiliki layup'));
             }
             $supplier->delete();
-            return $this->message('success','Supplier berhasil dihapus');
-        } catch (\Exception $e) {
-            return $this->message('error',$e->getMessage());
+            return $this->gd('success',$supplier);
+        } catch (\Exception $th) {
+            return $this->err('error',$th);
         }
     }
 }
