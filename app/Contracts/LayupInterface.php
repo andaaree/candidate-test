@@ -11,6 +11,7 @@ interface LayupInterface
     public function createForSupplier(int $supplierId, array $data);
     public function showDetailedLayup(Layup $layup);
     public function showLayerAssoc(Layup $layup);
+    public function store(array $data);
     public function updateForSupplier(int $supplierId,Layup $layup, array $data);
     public function deleteForSupplier(int $supplierId,Layup $layup);
 }
