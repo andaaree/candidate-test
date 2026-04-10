@@ -3,16 +3,20 @@
 namespace App\Http\Controllers;
 
 use App\Models\Layup;
+use App\Services\LayupService;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class LayupController extends Controller
 {
+    public function __construct(protected LayupService $layupService)
+    {}
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        //
+        return Inertia::render('Layup/Index');
     }
 
     /**

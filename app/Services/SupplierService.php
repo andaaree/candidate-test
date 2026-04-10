@@ -5,7 +5,6 @@ use App\Models\Supplier;
 use App\Contracts\SuppliersInterface;
 use App\Traits\FeedbackHandler;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use App\Traits\GlobalWarn;
 class SupplierService implements SuppliersInterface{
     use FeedbackHandler;
 

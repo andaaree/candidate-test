@@ -3,16 +3,23 @@
 namespace App\Http\Controllers;
 
 use App\Models\Supplier;
+use App\Services\SupplierService;
+use App\Traits\FeedbackHandler;
 use Illuminate\Http\Request;
 
 class SupplierController extends Controller
 {
+    use FeedbackHandler;
+    public function __construct(protected SupplierService $service)
+    {}
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        //
+        return inertia()->render('Supplier/Index',[
+            'suppliers' => [$this->service->paginate()]
+        ]);
     }
 
     /**
