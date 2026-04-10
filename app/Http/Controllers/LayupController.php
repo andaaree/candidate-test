@@ -3,16 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Models\Layup;
+use App\Services\LayupService;
 use Illuminate\Http\Request;
 
 class LayupController extends Controller
 {
+    public function __construct(
+        protected LayupService $service
+    ) {}
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Layup $layup)
     {
-        //
+        $layup = $layup->find(2);
+        return $this->service->showDetailedLayup($layup);
     }
 
     /**
