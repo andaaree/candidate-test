@@ -11,4 +11,7 @@ interface SuppliersInterface
     public function store(array $data);
     public function update(Supplier $supplier, array $data);
     public function delete(Supplier $supplier);
+    public function export(array $supplier);
+    public function setBreadcrumb();
+    public function import();
 }

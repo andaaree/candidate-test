@@ -46,5 +46,22 @@ trait FeedbackHandler
         $res->message .= $context->getMessage();
         return $res;
     }
+
+    public function defaultNav($page,$url){
+        $path = new ReflectionClass($page);
+        $path = $path->getShortName();
+        $lb = explode('/', $url);
+        $items = [
+            ['label' => 'Dashboard', 'url' => '/dashboard']
+        ];
+        foreach($lb as $key => $item){
+            if($key === 0){
+                $i = ['label' => ucfirst($path), 'url' => $item];
+            }
+            else{$i = ['label' => ucfirst($path), 'url' => $lb[0]."/".$item];}
+            array_push($items,$i);
+        }
+        return $items;
+    }
+
 }
-?>
