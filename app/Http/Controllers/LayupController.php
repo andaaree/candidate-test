@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\LayupStoreRequest;
+use App\Http\Requests\LayupUpdateRequest;
 use App\Models\Layup;
 use App\Services\LayupService;
-use Illuminate\Http\Request;
 
 class LayupController extends Controller
 {
@@ -31,9 +32,11 @@ class LayupController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(LayupStoreRequest $request)
     {
-        //
+        $res = $this->service->store($request->validated());
+        return $res;
+        // return redirect()->back()->with($res);
     }
 
     /**
@@ -55,7 +58,7 @@ class LayupController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Layup $layup)
+    public function update(LayupUpdateRequest $request, Layup $layup)
     {
         //
     }
