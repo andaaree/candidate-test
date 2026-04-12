@@ -22,11 +22,12 @@ class LayupUpdateRequest extends FormRequest
      */
     public function rules(): array
     {
+        $layup = $this->route('layup');
         return [
             'supplier_id' => ['required','integer','exists:suppliers,id'],
             'layup_name' => ['required','string','max:255',
             // Decline if same name as other layup
-                Rule::unique('layups','name')->ignore($this->id)
+                Rule::unique('layups', 'name')->where('supplier_id',$this->route('supplier')->id)->ignore($layup->id),
             ],
         ];
     }

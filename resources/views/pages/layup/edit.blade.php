@@ -12,24 +12,11 @@
 
         <nav>
             <ol class="flex items-center gap-1.5">
-                @foreach ($items as $item)
-                    @if($loop->first) <span>/</span> @endif
-                    @if (!$loop->first)
-                    <svg class="stroke-current mx-1" width="17" height="16" viewBox="0 0 17 16" fill="none">
-                        <path
-                        d="M6.0765 12.667L10.2432 8.50033L6.0765 4.33366"
-                        stroke-width="1.2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        />
-                    </svg>
-                    @endif
-                    <li class="text-sm">
-                    <a href="{{ $item['url'] }}" class="text-black hover:text-gray-600">
-                        {{ $item['label'] }}
+                <li class="text-sm">
+                    <a href="/supplier" class="text-black hover:text-gray-600">
+                        Supplier
                     </a>
-                    </li>
-                @endforeach
+                </li>
             </ol>
         </nav>
     </div>

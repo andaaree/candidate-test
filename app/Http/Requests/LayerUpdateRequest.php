@@ -12,7 +12,7 @@ class LayerUpdateRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -25,11 +25,9 @@ class LayerUpdateRequest extends FormRequest
         // Assume 'parent_id' is passed in the request or exists on the route
         return [
             'layup_id' => 'required|integer|exists:layups,id',
-            'layer_order' => ['required|integer',
+            'layer_order' => ['required','integer',
             // Decline if have same order as other layer, can just update the other layer
-                Rule::unique('layers','layer_order')->where(function ($query){
-                    return $query->where('layup_id', $this->layup_id);
-                })->ignore($this->id)
+                Rule::unique('layers','layer_order')->where('layup_id',$this->route('layup')->id)->ignore($this->route('layer')->id)
             ],
             'thickness' => 'required|decimal:1,2',
             'width' => 'required|decimal:1,2',

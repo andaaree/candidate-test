@@ -24,8 +24,8 @@ class LayerStoreRequest extends FormRequest
     {
         // Assume 'parent_id' is passed in the request or exists on the route
         return [
-            'layup_id' => 'required|integer|exists:layups,id',
-            'layer_order' => ['required|integer',
+            'layup_id' => ['required','integer','exists:layups,id'],
+            'layer_order' => ['required','integer',
             // Decline if have same order as other layer, can just update the other layer
                 Rule::unique('layers','layer_order')->where(function ($query){
                     return $query->where('layup_id', $this->layup_id);

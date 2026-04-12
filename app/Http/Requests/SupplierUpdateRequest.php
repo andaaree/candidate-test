@@ -24,7 +24,6 @@ class SupplierUpdateRequest extends FormRequest
     {
         return [
             'supplier_name' => ['required','string','max:255',
-                Rule::unique('suppliers','name')->ignore($this->id)
             ]
         ];
     }

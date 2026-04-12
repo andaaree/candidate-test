@@ -26,7 +26,7 @@ class LayupStoreRequest extends FormRequest
             'supplier_id' => 'required|integer|exists:suppliers,id',
             'layup_name' => ['required','string','max:255',
             // Decline if same name as other layup
-                Rule::unique('layups','name')->ignore($this->id)
+                Rule::unique('layups','name')
             ],
         ];
     }
