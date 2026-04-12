@@ -17,5 +17,6 @@ interface SuppliersInterface
     public function setBreadcrumb($class);
     public function parse($file): array;
     public function detectConflicts(array $data): array;
-    public function applyResolvedImport(array $draft): array;
+    // public function applyResolvedImport(array $draft): array;
+    public function mappingData(array $data,$supplier): array;
 }

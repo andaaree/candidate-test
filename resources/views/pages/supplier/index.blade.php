@@ -1,5 +1,9 @@
 @extends('layouts.main')
 
+@section('js')
+<meta name="csrf-token" content="{{ csrf_token() }}">
+@endsection
+
 @include('partials.navsupp')
 
 @section('content')
@@ -68,7 +72,7 @@
                 <td class="p-3 space-x-2">
                   <a href="/supplier/{{ $t['id'] }}" class="btn btn-sm text-green-600 hover:underline">View</a>
                   <a href="/supplier/{{ $t['id'] }}/edit" class="btn btn-sm text-blue-600 hover:underline">Edit</a>
-                  <button onclick="showDelete()" data-id="{{ $t['id'] }}" class="btn btn-sm text-red-600 hover:underline">Delete</button>
+                  <button data-id="{{ $t['id'] }}" class="btn btn-sm text-red-600 hover:underline btnDelete">Delete</button>
                 </td>
               </tr>
               @endforeach
@@ -151,28 +155,54 @@ document.getElementById('supplierModal').addEventListener('click', function(e) {
 document.getElementById('exportModal').addEventListener('click', function(e) {
     if (e.target === this) toggleExport(false)
 });
-function showDelete(e) {
-e.preventDefault();
-const id = e.target.dataset.id;
-Swal.fire({
-    title: 'Are you sure?',
-    text: "You won't be able to revert this!",
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonColor: '#3085d6',
-    cancelButtonColor: '#d33',
-    confirmButtonText: 'Yes, delete it!'
-}).then((result) => {
-    if (result.isConfirmed) {
-        $.post("/sp/"+id, data,
-            function (data, textStatus, jqXHR) {
 
-            },
-            "dataType"
-        );
-    }
+$('.btnDelete').click(function (e) {
+    e.preventDefault();
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, delete it!'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const id = $(this).data('id');
+            $.ajax({
+                type:"delete",
+                url:"/supplier/"+id,
+                data:{
+                    _token: "{{ csrf_token() }}",
+                },
+                success:function(data){
+                    Swal.fire({
+                    icon: data.status,
+                    title: data.title,
+                    text: data.message,
+                    timer: 1200
+                    });
+                    // table.draw();
+                    setTimeout(() => {
+                        window.location.href = window.location.href;
+                    }, 300);
+                },error:function(data){
+                    var js = data.responseJSON;
+                    Swal.fire({
+                        icon: 'error',
+                        title: js.exception,
+                        text: js.message,
+                        timer: 1200
+                    });
+                    setTimeout(() => {
+                        window.location.href = window.location.href;
+                    }, 300);
+                }
+            });
+        }
+    })
 });
-}
+
 $('#exportBtn').click(function () {
     $.get('/api/suppliers', function (suppliers) {
 

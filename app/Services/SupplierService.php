@@ -21,6 +21,10 @@ class SupplierService implements SuppliersInterface{
             ->paginate($perPage);
     }
 
+    public function getAll(){
+        return Supplier::all();
+    }
+
     public function store(array $data) {
         try {
             return Supplier::create($data);
@@ -31,17 +35,21 @@ class SupplierService implements SuppliersInterface{
 
     public function update(Supplier $supplier, array $data) {
         try {
-            $supplier->update($data);
-            return $supplier;
+            $supplier->name = $data['supplier_name'];
+            $supplier->save();
+
+            $res = $this->message($supplier,'updated');
+            return redirect()->route('supplier.index')->with($res->status,json_encode($res));
         } catch (\Exception $th) {
-            return $this->err(Supplier::class,$th);
+            $res = $this->err(Supplier::class,$th);
+            return redirect()->route('supplier.index')->with($res->status,json_encode($res));
         }
     }
 
     public function delete(Supplier $supplier) {
       try {
         if ($supplier->layups()->exists()) {
-          return $this->message($supplier,null,'Supplier  layup');
+          return $this->message($supplier,null,'Supplier have layups in it!');
         }
         $supplier->delete();
         return $this->message($supplier,null,'Supplier deleted successfully');
@@ -88,122 +96,137 @@ class SupplierService implements SuppliersInterface{
       }
     }
 
-    public function parse($file): array
+    public function parse($filePath): array
     {
-        if ($file->getClientOriginalExtension() === 'json') {
-            return json_decode(file_get_contents($file->getRealPath()), true);
+        if ($filePath === 'json') {
+            return json_decode(file_get_contents($filePath), true);
         }
 
-        return Excel::toArray([], $file)[0];
+        return Excel::toArray([], $filePath)[0];
     }
 
     public function detectConflicts(array $data): array
     {
         $conflicts = [];
+        foreach ($data as $d) {
+            $existing = Layup::where('name', $d['layup_name'])
+                ->with('supplier', 'layers')
+                ->first();
+            if (! $existing) continue;
+            // find the correct layer by order
+            $layer = $existing->layers
+                ->firstWhere('layer_order', $d['layer_order']);
+            // ONLY if both layers exist
+            if (! $layer) continue;
 
-        foreach ($data as $supplier) {
-            foreach ($supplier['layups'] ?? [] as $layup) {
-                foreach ($layup['layers'] ?? [] as $layer) {
-                    $existing = Layer::whereHas('layup', function ($q) use ($supplier, $layup) {
-                        $q->where('name', $layup['name'])
-                        ->whereHas('supplier', fn($s) => $s->where('name', $supplier['name']));
-                    })->where('layer_order', $layer['layer_order'])->first();
-
-                    if ($existing) {
-                        if (
-                            $existing->thickness != $layer['thickness'] ||
-                            $existing->width != $layer['width'] ||
-                            $existing->angle != $layer['angle']
-                        ) {
-                            $conflicts[] = [
-                                'supplier' => $supplier['name'],
-                                'layup' => $layup['name'],
-                                'layer_order' => $layer['layer_order'],
-                                'existing' => $existing->toArray(),
-                                'incoming' => $layer,
-                                'decision' => null,
-                            ];
-                        }
-                    }
-                }
+            // detect difference (real conflict)
+            if (
+                (float)$layer->thickness !== (float)$d['thickness'] ||
+                (float)$layer->width !== (float)$d['width'] ||
+                (float)$layer->angle !== (float)$d['angle']
+            ) {
+                $conflicts[] = [
+                    'supplier_id' => $d['supplier_id'],
+                    'supplier_name' => $d['supplier_name'],
+                    'layup' => $d['layup_name'],
+                    'layer_order' => $d['layer_order'],
+                    'existing' => [
+                        'id' => $layer->id,
+                        'thickness' => (float)$layer->thickness,
+                        'width' => (float)$layer->width,
+                        'angle' => (float)$layer->angle,
+                    ],
+                    'incoming' => [
+                        'layer_order' => $d['layer_order'],
+                        'thickness' => (float)$d['thickness'],
+                        'width' => (float)$d['width'],
+                        'angle' => (float)$d['angle'],
+                    ],
+                    'decision' => null,
+                ];
             }
         }
-
         return $conflicts;
     }
-    public function applyResolvedImport(array $draft): array
+
+    public function resolveConflicts(array $conflicts)
     {
-        $payload = $draft['payload'];
-        $conflicts = collect($draft['conflicts']);
-
-        $result = [
-            'created' => [],
-            'updated' => [],
-            'applied_conflicts' => [],
-        ];
-
-        DB::transaction(function () use ($payload, $conflicts, &$result) {
-
-            foreach ($payload as $supplierData) {
-
-                $supplier = Supplier::firstOrCreate([
-                    'name' => $supplierData['name']
+        try {
+            $updated = [];
+            foreach ($conflicts as $c) {
+                $layup = Layup::where('name', $c['layup'])
+                    ->where('supplier_id', $c['supplier_id'])
+                    ->first();
+                if (!$layup) continue;
+                // find layer (ONLY existing layer)
+                $layer = Layer::where('layup_id', $layup->id)
+                ->where('layer_order', $c['layer_order'])
+                ->first();
+                if (!$layer) continue;
+                //  overwrite with incoming
+                $layer->update([
+                    'thickness' => $c['incoming']['thickness'],
+                    'width'     => $c['incoming']['width'],
+                    'angle'     => $c['incoming']['angle'],
                 ]);
-
-                foreach ($supplierData['layups'] as $layupData) {
-
-                    $layup = Layup::firstOrCreate([
-                        'supplier_id' => $supplier->id,
-                        'name' => $layupData['name']
-                    ]);
-
-                    foreach ($layupData['layers'] as $layerData) {
-
-                        $key = md5($layup->name.'-'.$layerData['layer_order']);
-
-                        $conflict = $conflicts->first(fn($c) => md5($c['layup'].'-'.$c['layer_order']) === $key);
-
-                        $existing = Layer::where('layup_id', $layup->id)
-                            ->where('layer_order', $layerData['layer_order'])
-                            ->first();
-
-                        if ($conflict && $conflict['decision'] === 'keep_existing') {
-                            continue;
-                        }
-
-                        if ($conflict && $conflict['decision'] === 'accept_incoming') {
-
-                            if ($existing) {
-                                $existing->update($layerData);
-                                $result['applied_conflicts'][] = $key;
-                            } else {
-                                Layer::create([
-                                    'layup_id' => $layup->id,
-                                    ...$layerData
-                                ]);
-                            }
-
-                            continue;
-                        }
-
-                        // normal flow (no conflict)
-                        if (!$existing) {
-                            Layer::create([
-                                'layup_id' => $layup->id,
-                                ...$layerData
-                            ]);
-                        }
-                    }
-                }
+                $updated[] = [
+                    'layer_id' => $layer->id,
+                    'layup' => $c['layup'],
+                    'layer_order' => $c['layer_order'],
+                ];
             }
-        });
+            return $this->message(Layer::class,'updated');
+        } catch (\Exception $e) {
+            return $this->err(Layer::class,$e);
+        }
+    }
 
-        return $result;
+    public function saveImported(array $data){
+        try {
+            $sp = [];
+            $lp = [];
+            $ly = [];
+            foreach ($data as $key => $d) {
+                $sp = Supplier::firstOrCreate(['name' => $d['supplier_name']]);
+                $lp = Layup::firstOrCreate(['name'=> $d['layup_name'], 'supplier_id' => $sp->id ]);
+                $ly = Layer::firstOrCreate([
+                    ['layup_id' => $lp->id, "layer_order" => $d['layer_order'] ],
+                    ["thickness" => $d['thickness'] , "width" => $d['width'] ,
+                    "angle" => $d['angle'] ]
+                ]);
+            }
+            $res = $this->message(null,null,"Import unkown. $sp <br> $lp <br> $ly");
+            return $res;
+        } catch (\Exception $th) {
+            return $this->err(Supplier::class,$th);
+        }
     }
 
     public function resolveLastSupplier(array $payload)
     {
-        $name = collect($payload)->last()['name'] ?? null;
+        $name = collect($payload)->last()['supplier_name'] ?? null;
         return Supplier::where('name', $name)->first();
+    }
+    public function mappingData(array $data,$supplier):array {
+
+        if (empty($data) || count($data) < 2) {
+            return [];
+        }
+        $headers = $data[0]; // first row = header
+        $mapped = [];
+
+        foreach ($data as $i => $row) {
+            if ($i === 0) {
+                continue; // skip header
+            }
+            $item = [];
+            $item['supplier_id'] = $supplier->id;
+            $item['supplier_name'] = $supplier->name;
+            foreach ($headers as $index => $key) {
+                $item[$key] = $row[$index] ?? null;
+            }
+            $mapped[] = $item;
+        }
+        return $mapped;
     }
 }

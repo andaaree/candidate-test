@@ -24,7 +24,7 @@ trait FeedbackHandler
         if (empty($context)) {
             $res->message = $custom;
         }else{
-            $res->message = "$path telah di $context !";
+            $res->message = "$path has been $context !";
         }
         return $res;
     }
@@ -54,7 +54,7 @@ trait FeedbackHandler
             ['label' => 'Dashboard', 'url' => '/dashboard']
         ];
         $currentUrl = '';
-        
+
         foreach ($segments as $index => $segment) {
             $currentUrl .= '/' . $segment;
             $items[] = [

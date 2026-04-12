@@ -1,6 +1,6 @@
 @extends('layouts.main')
 
-@include('partials.nav')
+@include('partials.navsupp')
 
 @section('content')
 
@@ -44,10 +44,10 @@
                 <p>ID : {{ $supplier->id }}</p>
             </div>
             <div class="flex justify-between p-2 items-center">
-                <button class="edit-supplier btn btn-sm">
+                <a href="{{ route('supplier.edit',$supplier->id) }}" class="edit-supplier btn btn-sm">
                     <span class="material-icons">edit</span>
                     Edit Supplier
-                </button>
+                </a>
             </div>
         </div>
     </div>
@@ -58,8 +58,8 @@
         </div>
         <div class="flex-item">
             <div class="flex flex-auto">
-                <a href="{{ route('supplier.import') }}" class="btn btn-sm rounded-lg mx-2 p-2 bg-white"><span class="material-icons">download</span>Import</a>
-                <button id="btnExport" class="btn btn-sm rounded-lg mx-2 p-2 bg-white"><span class="material-icons">upload</span>Export</button>
+                <a href="{{ route('supplier.import',$supplier->id) }}" class="btn btn-sm rounded-lg mx-2 p-2 bg-white"><span class="material-icons">download</span>Import</a>
+                <a href="{{ route('layup.export',$supplier->id) }}" id="btnExport" class="btn btn-sm rounded-lg mx-2 p-2 bg-white"><span class="material-icons">upload</span>Export</a>
                 <button class="btn btn-sm rounded-lg mx-2 p-2 bg-green-800 text-white"><span class="material-icons">add</span> Add Layup</button>
             </div>
         </div>

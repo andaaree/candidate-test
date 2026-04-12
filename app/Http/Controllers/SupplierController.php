@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\SupplierImportRequest;
 use App\Http\Requests\SupplierStoreRequest;
+use App\Http\Requests\SupplierUpdateRequest;
 use App\Models\Supplier;
 use App\Services\SupplierService;
 use App\Traits\FeedbackHandler;
@@ -50,7 +51,7 @@ class SupplierController extends Controller
     public function store(SupplierStoreRequest $request)
     {
         $res = $this->service->store($request->validated());
-        return $res;
+        return redirect()->route('supplier.index')->with($res->status,json_encode($res));
     }
 
     /**
@@ -72,15 +73,20 @@ class SupplierController extends Controller
      */
     public function edit(Supplier $supplier)
     {
-        //
+        return view('pages.supplier.edit',[
+            'supplier' => $supplier,
+            'title' => 'Edit Supplier',
+            'pageName' => 'Edit Supplier',
+            'items' => $this->items
+        ]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Supplier $supplier)
+    public function update(SupplierUpdateRequest $request, Supplier $supplier)
     {
-        //
+        return $this->service->update($supplier,$request->validated());
     }
 
     /**
@@ -88,7 +94,8 @@ class SupplierController extends Controller
      */
     public function destroy(Supplier $supplier)
     {
-        //
+        $res = $this->service->delete($supplier);
+        return response()->json($res);
     }
 
     public function export(Request $request)
@@ -97,73 +104,70 @@ class SupplierController extends Controller
         return $this->service->export($mode);
     }
 
-    public function import(){
+    public function import(Supplier $supplier)
+    {
         return view('pages.supplier.import',[
+            'supplier' => $supplier,
             'items' => $this->items,
             'title' => 'Import Supplier',
             'pageName' => 'Import Supplier'
         ]);
     }
 
-    public function uploadFile(SupplierImportRequest $request)
-    {
-        $file = $request->file('file');
-
-        $path = $file->store('public/');
-
-        return response()->json([
-            'file_token' => $path, // simple token
-        ]);
-    }
-
-    public function upload(Request $request)
-    {
+    public function importFile(Request $request, Supplier $supplier) {
         $request->validate([
-            'file_token' => ['required', 'string'],
+            'imported' => ['required','file','extensions:xlsx,csv,json','max:1024000'],
+            'mode' => 'required|in:accept_incoming,keep_existing'
         ]);
-        $path = $request->input('file_token');
-        abort_if(!Storage::exists($path), 404, 'File not found');
-
+        $file = $request->file('imported');
+        if ($request->hasFile('imported')) {
+            $fileType = $request->file('imported')->getClientOriginalExtension();
+        }
+        $filename = 'supplier_import_' . now('Asia/Jakarta')->format('Ymd_His') .'.'. $fileType;
+        $path = $file->storeAs('public', $filename);
         $fullPath = storage_path("app/" . $path);
-        $parsed = $this->service->parse($fullPath);
-        $sessionId = (string) Str::uuid();
-        $conflicts = $this->service->detectConflicts($parsed);
 
+        $parsed = $this->service->parse($file);
+        $parsed = $this->service->mappingData($parsed,$supplier);
+        $conflicts = $this->service->detectConflicts($parsed);
+        $supplier = $this->service->resolveLastSupplier($parsed);
+
+        $sessionId = (string) Str::uuid();
         session([
             "import_draft.$sessionId" => [
                 'payload' => $parsed,
                 'conflicts' => $conflicts,
             ]
         ]);
-
-        // no conflict -> auto import
         if (empty($conflicts)) {
-
-            $this->service->applyResolvedImport([
-                'payload' => $parsed,
-                'conflicts' => []
-            ]);
             // cleanup
-            session()->forget("import_draft.$sessionId");
             Storage::delete($path);
-            $supplier = $this->service->resolveLastSupplier($parsed);
-            return redirect()
-                ->route('supplier.show', $supplier?->id)
-                ->with('success', 'Import completed successfully.');
+            session()->forget("import_draft.$sessionId");
+            $res = $this->service->saveImported($parsed);
         }
+        if ($request->mode == 'review') {
+            // HAS CONFLICT -> REVIEW PAGE
+            $sessionId = (string) Str::uuid();
+            return redirect("/supplier/import/review/$sessionId");
+        }
+        // Has Conflict -> overwrite
+        $res = $this->service->resolveConflicts($conflicts);
 
-        // HAS CONFLICT -> REVIEW PAGE
-        return redirect("/supplier/import/review/$sessionId");
-}
+        return redirect()
+            ->route('supplier.show', $supplier?->id)
+            ->with($res->status, $res->message);
+    }
 
     public function review($sessionId)
     {
         $draft = session("import_draft.$sessionId");
         abort_if(!$draft, 404);
 
-        return view('import.review', [
+        return view('pages.review', [
             'sessionId' => $sessionId,
-            'draft' => $draft
+            'draft' => $draft,
+            'title' => 'Supplier Import Review',
+            'pageName' => 'Supplier Import Review',
         ]);
     }
 
@@ -185,32 +189,6 @@ class SupplierController extends Controller
 
         return response()->json(['status' => 'ok']);
     }
-
-    public function commit(string $sessionId)
-    {
-        $draft = session("import_draft.$sessionId");
-        abort_if(!$draft, 404);
-
-        // Execute import
-        $result = $this->service->applyResolvedImport($draft);
-        // Cleanup session
-        session()->forget("import_draft.$sessionId");
-
-        // Resolve redirect target (last supplier)
-        $lastSupplierName = collect($draft['payload'])->last()['name'] ?? null;
-        $supplier = Supplier::where('name', $lastSupplierName)->first();
-
-        // Simple, readable message (no extra function)
-        $created = count($result['created'] ?? []);
-        $updated = count($result['updated'] ?? []);
-        $resolved = count($result['applied_conflicts'] ?? []);
-
-        $res = $this->message(Supplier::class,"Created: {$created}, Updated: {$updated}, Resolved: {$resolved}");
-        return redirect()
-            ->route('suppliers.show', $supplier?->id)
-            ->with($res->status,$res);
-    }
-
     private function conflictKey($c)
     {
         return md5($c['layup'].'-'.$c['layer_order']);
