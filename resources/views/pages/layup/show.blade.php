@@ -8,7 +8,7 @@
 
     <!-- 📍 Breadcrumb -->
     <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <h2 class="text-xl font-semibold text-gray-800">
+        <h2 class="text-xl font-semibold text-gray-800 dark:text-white/90">
             {{ $pageName }}
         </h2>
 
@@ -40,13 +40,13 @@
     <div class="card card-body bg-white shadow-lg rounded-lg border-gray-800">
         <div class="flex items-center justify-between overflow-hidden max-w-screen-xl p-4 py-5 mx-auto">
             <div class="p-2">
-                <h1 class="font-bold h1">{{ $supplier->name }}</h1>
-                <p>ID : {{ $supplier->id }}</p>
+                <h1 class="font-bold text-xl">Layup Specifications : {{ $layup->name }}</h1>
+                <p class="text-gray-400">ID : {{ $layup->id }}</p>
             </div>
             <div class="flex justify-between p-2 items-center">
-                <button class="edit-supplier btn btn-sm">
+                <button class="edit-layup btn btn-sm">
                     <span class="material-icons">edit</span>
-                    Edit Supplier
+                    Edit Layup
                 </button>
             </div>
         </div>
@@ -58,8 +58,8 @@
         </div>
         <div class="flex-item">
             <div class="flex flex-auto">
-                <a href="{{ route('supplier.import') }}" class="btn btn-sm rounded-lg mx-2 p-2 bg-white"><span class="material-icons">download</span>Import</a>
-                <button id="btnExport" class="btn btn-sm rounded-lg mx-2 p-2 bg-white"><span class="material-icons">upload</span>Export</button>
+                <button class="btn btn-sm rounded-lg mx-2 p-2 bg-white"><span class="material-icons">download</span>Import</button>
+                <button class="btn btn-sm rounded-lg mx-2 p-2 bg-white btnExport"><span class="material-icons">upload</span>Export</button>
                 <button class="btn btn-sm rounded-lg mx-2 p-2 bg-green-800 text-white"><span class="material-icons">add</span> Add Layup</button>
             </div>
         </div>
@@ -71,23 +71,23 @@
             <table class="table-fixed max-w-screen-xl mx-auto w-full text-sm">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="p-3 text-left">Layup ID</th>
-                        <th class="p-3 text-left">Name</th>
+                        <th class="p-3 text-left">ORDER</th>
                         <th class="p-3 text-left">Thickness</th>
-                        <th class="p-3 text-left">Ply Count</th>
+                        <th class="p-3 text-left">Width</th>
+                        <th class="p-3 text-left">Angle</th>
                         <th class="p-3 text-left">Action</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($supplier->layups as $key => $lp)
+                    @foreach($layup->layers as $key => $ly)
                     <tr class="border-2 hover:bg-slate-100">
-                        <td class="p-3">{{ $lp['id'] }}</td>
-                        <td class="p-3">{{ $lp['name'] }}</td>
-                        <td class="p-3">{{ $lp['layers_sum_thickness'] ?? 0 }}mm</td>
-                        <td class="p-3">{{ $lp['total_layers'] }}</td>
+                        <td class="p-3">{{ $ly['layer_order'] }}</td>
+                        <td class="p-3">{{ $ly['thickness'] ?? 0 }}mm</td>
+                        <td class="p-3">{{ $ly['width'] ?? 0 }}mm</td>
+                        <td class="p-3">{{ $ly['angle'] ?? 0 }} deg</td>
                         <td class="p-3">
-                            <a href="{{ route('layup.show',[$supplier->id,$lp['id']]) }}" class="rounded-lg span material-icons">info</a>
-                            <a href="{{ route('layup.edit',[$supplier->id,$lp['id']]) }}" class="rounded-lg span material-icons">edit</a>
+                            <a href="{{ route('layer.show',[$layup->id,$ly['id']]) }}" class="rounded-lg span material-icons">info</a>
+                            <a href="{{ route('layer.edit',[$layup->id,$ly['id']]) }}" class="rounded-lg span material-icons">edit</a>
                             <button class="rounded-lg span material-icons">trash</button>
                         </td>
                     @endforeach
@@ -98,10 +98,12 @@
         </div>
 
     </div>
-
 </div>
 @include('components.validator')
 <script>
+    $('.btnExport').click(function(e){
+        e.preventDefault();
 
+    });
 </script>
 @endsection

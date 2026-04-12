@@ -1,9 +1,8 @@
-<x-layouts.main
-    title="Dashboard"
-    :breadcrumbs="[
-        $items
-    ]"
->
+@extends('layouts.main')
+
+@include('partials.navdb')
+
+@section('content')
 
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 
@@ -25,4 +24,4 @@
 
 </div>
 
-</x-layouts.main>
+@endsection

@@ -49,7 +49,7 @@
         <li class="mb-4 lg:mb-0 lg:pe-2" data-twe-nav-item-ref>
           <!-- Dashboard link -->
           <a
-            class="@if($items[1]['label'] == 'Dashboard') active text-green-800 @else text-neutral-700 @endif transition duration-200 hover:text-neutral-700 hover:ease-in-out focus:text-neutral-700 disabled:text-black/30 motion-reduce:transition-none dark:hover:text-neutral-300 dark:focus:text-neutral-300 lg:px-2 [&.active]:text-black/90 dark:[&.active]:text-zinc-400"
+            class="@if($items[0]['label'] == 'Dashboard') active text-green-800 @else text-neutral-700 @endif transition duration-200 hover:text-neutral-700 hover:ease-in-out focus:text-neutral-700 disabled:text-black/30 motion-reduce:transition-none dark:hover:text-neutral-300 dark:focus:text-neutral-300 lg:px-2 [&.active]:text-black/90 dark:[&.active]:text-zinc-400"
             href="/dashboard"
             >Dashboard</a
           >
@@ -57,7 +57,7 @@
         <li class="mb-4 lg:mb-0 lg:pe-2" data-twe-nav-item-ref>
           <!-- Suppliers link -->
           <a
-            class="@if($items[1]['label'] == 'Supplier') active text-green-800 @else text-neutral-700 @endif transition duration-200 hover:text-neutral-700 hover:ease-in-out focus:text-neutral-700 disabled:text-black/30 motion-reduce:transition-none dark:hover:text-neutral-300 dark:focus:text-neutral-300 lg:px-2 [&.active]:text-black/90 dark:[&.active]:text-zinc-400"
+            class="@if($items[0]['label'] == 'Supplier') active text-green-800 @else text-neutral-700 @endif transition duration-200 hover:text-neutral-700 hover:ease-in-out focus:text-neutral-700 disabled:text-black/30 motion-reduce:transition-none dark:hover:text-neutral-300 dark:focus:text-neutral-300 lg:px-2 [&.active]:text-black/90 dark:[&.active]:text-zinc-400"
             href="/supplier"
             >Supplier</a
           >
@@ -65,7 +65,7 @@
         <li class="mb-4 lg:mb-0 lg:pe-2" data-twe-nav-item-ref>
           <!-- Layups link -->
           <a
-            class="@if($items[1]['label'] == 'Layup') active text-green-800 @else text-neutral-700 @endif transition duration-200 hover:text-neutral-700 hover:ease-in-out focus:text-neutral-700 disabled:text-black/30 motion-reduce:transition-none dark:hover:text-neutral-300 dark:focus:text-neutral-300 lg:px-2 [&.active]:text-black/90 dark:[&.active]:text-zinc-400"
+            class="@if($items[0]['label'] == 'Layup') active text-green-800 @else text-neutral-700 @endif transition duration-200 hover:text-neutral-700 hover:ease-in-out focus:text-neutral-700 disabled:text-black/30 motion-reduce:transition-none dark:hover:text-neutral-300 dark:focus:text-neutral-300 lg:px-2 [&.active]:text-black/90 dark:[&.active]:text-zinc-400"
             href="/layup"
             >Layups</a
           >
@@ -73,7 +73,7 @@
         <li class="mb-4 lg:mb-0 lg:pe-2" data-twe-nav-item-ref>
           <!-- Layers link -->
           <a
-            class="@if($items[1]['label'] == 'layer') active text-green-800 @else text-neutral-700 @endif transition duration-200 hover:text-neutral-700 hover:ease-in-out focus:text-neutral-700 disabled:text-black/30 motion-reduce:transition-none dark:hover:text-neutral-300 dark:focus:text-neutral-300 lg:px-2 [&.active]:text-black/90 dark:[&.active]:text-zinc-400"
+            class="@if($items[0]['label'] == 'layer') active text-green-800 @else text-neutral-700 @endif transition duration-200 hover:text-neutral-700 hover:ease-in-out focus:text-neutral-700 disabled:text-black/30 motion-reduce:transition-none dark:hover:text-neutral-300 dark:focus:text-neutral-300 lg:px-2 [&.active]:text-black/90 dark:[&.active]:text-zinc-400"
             href="/layer"
             >Layers</a
           >
