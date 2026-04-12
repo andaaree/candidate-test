@@ -3,9 +3,12 @@
 namespace App\Services;
 
 use App\Contracts\LayupInterface;
+use App\Exports\LayupExport;
 use App\Models\Layup;
+use App\Models\Supplier;
 use App\Traits\FeedbackHandler;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Maatwebsite\Excel\Facades\Excel;
 
 class LayupService implements LayupInterface{
     use FeedbackHandler;
@@ -30,7 +33,7 @@ class LayupService implements LayupInterface{
         try {
             $layup = $layup->withSum('layers','thickness')
             ->withCount('layers as total_layers')
-            ->with('layers','supplier')
+            ->with(['layers' => function($q){$q->orderBy('layer_order');}],'supplier')
             ->find($layup->id);
             return $layup;
         } catch (\Exception $th) {
@@ -48,10 +51,16 @@ class LayupService implements LayupInterface{
         throw new \Exception('Not implemented');
     }
 
-    public function store(array $data) {
+    public function store(int $supplier, array $data) {
         try {
-            $lay = Layup::create($data);
-            return $this->message($lay,null,'Layup created successfully');
+            if ($supplier != $data['supplier_id']) {
+                return $this->err(Layup::class,new \Exception('Supplier tidak ditemukan'));
+            }
+            $lay = new Layup;
+            $lay->supplier_id = $supplier;
+            $lay->name = $data['layup_name'];
+            $lay->save();
+            return $this->message($lay,'created');
         } catch (\Throwable $th) {
             return $this->err(Layup::class,$th);
         }
@@ -64,11 +73,16 @@ class LayupService implements LayupInterface{
             if ($getSupID != $supplierId) {
                 return $this->err('error', new \Exception('Supplier tidak ditemukan'));
             }
+            $layup->name = $data['layup_name'];
             $layup->update($data);
-            return $layup;
+            return $this->message($layup,'updated');
         } catch (\Exception $th) {
             return $this->err('error',$th);
         }
+    }
+
+    public function setBreadcrumb($class) {
+        return $this->defaultNav($class,request()->path());
     }
 
     public function deleteForSupplier(int $supplierId, Layup $layup)
@@ -82,6 +96,24 @@ class LayupService implements LayupInterface{
             return $this->message($layup,null,'Layup deleted successfully');
         } catch (\Exception $th) {
             return $this->err(Layup::class,$th);
+        }
+    }
+
+    public function exportBySupplier(Supplier $supplier)
+    {
+        try {
+            return Excel::download(new LayupExport($supplier->id), 'layups_'.now('Asia/Jakarta')->format('Ymd_His').'.xlsx');
+        }catch(\Exception $th){
+            return $this->err(Layup::class,$th);
+        }
+    }
+
+    public function importBySupplier(int $supplierId, string $strategy)
+    {
+        try {
+            //code...
+        } catch (\Throwable $th) {
+            //throw $th;
         }
     }
 }

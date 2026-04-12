@@ -60,7 +60,7 @@
             <div class="flex flex-auto">
                 <a href="{{ route('supplier.import',$supplier->id) }}" class="btn btn-sm rounded-lg mx-2 p-2 bg-white"><span class="material-icons">download</span>Import</a>
                 <a href="{{ route('layup.export',$supplier->id) }}" id="btnExport" class="btn btn-sm rounded-lg mx-2 p-2 bg-white"><span class="material-icons">upload</span>Export</a>
-                <button class="btn btn-sm rounded-lg mx-2 p-2 bg-green-800 text-white"><span class="material-icons">add</span> Add Layup</button>
+                <a href="{{ route('layup.create',$supplier->id) }}" class="btn btn-sm rounded-lg mx-2 p-2 bg-green-800 text-white"><span class="material-icons">add</span> Add Layup</a>
             </div>
         </div>
     </div>

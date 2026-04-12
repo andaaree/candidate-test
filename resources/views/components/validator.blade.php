@@ -14,7 +14,7 @@
         var js = JSON.parse(data);
         Swal.fire({
             icon: 'success',
-            title: 'Berhasil',
+            title: 'Done',
             text: js.message,
             timer: 1700
         });
@@ -30,7 +30,7 @@
         console.log(data);
         Swal.fire({
             icon: 'error',
-            title: 'Gagal',
+            title: 'Failed',
             text: js.message,
             timer: 3000
         });

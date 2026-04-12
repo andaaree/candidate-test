@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class LayupStoreRequest extends FormRequest
 {
@@ -23,7 +24,10 @@ class LayupStoreRequest extends FormRequest
     {
         return [
             'supplier_id' => 'required|integer|exists:suppliers,id',
-            'name' => 'required|string|max:255',
+            'layup_name' => ['required','string','max:255',
+            // Decline if same name as other layup
+                Rule::unique('layups','name')->ignore($this->id)
+            ],
         ];
     }
 }
