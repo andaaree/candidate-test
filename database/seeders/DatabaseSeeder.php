@@ -17,13 +17,13 @@ class DatabaseSeeder extends Seeder
 
         User::factory()->create([
             'name' => 'Test User',
-            'email' => 'test@example.com',
+            'email' => 'a@asd.com',
         ]);
 
         $this->call([
             SupplierSeeder::class,
             LayupSeeder::class,
-            
+            LayerSeeder::class
         ]);
     }
 }
